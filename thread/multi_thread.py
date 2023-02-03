@@ -27,7 +27,7 @@ class MainWindow(QMainWindow):
 
         layout = QVBoxLayout()
 
-        self.l = QLabel("Start")
+        self.l = QLabel("Mutli Threading is cool!")
         b = QPushButton("DANGER!")
         b.pressed.connect(self.oh_no)
 
