@@ -1,34 +1,57 @@
 from PyQt6.QtWidgets import QApplication, QMainWindow, QPushButton, QVBoxLayout, QLabel, QWidget
-from PyQt6.QtCore import QThread, pyqtSignal, QTimer
+from PyQt6.QtCore import QThread, pyqtSignal, QTimer, QRunnable, QThreadPool, pyqtSlot
 import time
+
+
+class Worker(QRunnable):
+    def __init__(self, *args, **kwargs):
+        super().__init__()
+        self.args = args
+        self.kwargs = kwargs
+
+    @pyqtSlot()
+    def run(self):
+        print("Thread Start")
+        time.sleep(5)
+        print("Thread Done")
 
 
 class MainWindow(QMainWindow):
     def __init__(self):
         super().__init__()
         self.setWindowTitle("Multi Thread")
+        self.threadpool = QThreadPool()
+        print("Multithreading with maximum %d threads" %
+              self.threadpool.maxThreadCount())
         self.counter = 0
-        self.l = QLabel()
+
         layout = QVBoxLayout()
-        self.button = QPushButton("Press Me!")
-        self.button.clicked.connect(self.button_clicked)
+
+        self.l = QLabel("Start")
+        b = QPushButton("DANGER!")
+        b.pressed.connect(self.oh_no)
+
+        c = QPushButton("?")
+        c.pressed.connect(self.change_message)
+
         layout.addWidget(self.l)
-        layout.addWidget(self.button)
-        container = QWidget()
-        container.setLayout(layout)
-        self.setCentralWidget(container)
+        layout.addWidget(b)
+
+        layout.addWidget(c)
+
+        w = QWidget()
+        w.setLayout(layout)
+
+        self.setCentralWidget(w)
 
         self.show()
-        self.timer = QTimer()
-        self.timer.setInterval(1000)
-        self.timer.timeout.connect(self.show_time)
 
-    def button_clicked(self):
-        time.sleep(5)
+    def change_message(self):
+        self.message = "OH NO"
 
-    def show_time(self):
-        self.counter += 1
-        self.l.setText("Counter: %d" % self.counter)
+    def oh_no(self):
+        worker = Worker()
+        self.threadpool.start(worker)
 
 
 if __name__ == "__main__":
